@@ -518,11 +518,13 @@ def build_command(args, pwd=None):
 
 
 class ZimApplication(object):
-	'''This object is repsonsible for managing the life cycle of the
+	'''
+	This object is responsible for managing the lifecycle of the
 	application process.
 
 	To do so, it decides whether to dispatch a command to an already
 	running zim process or to handle it in the current process.
+
 	For gtk based commands it keeps track of the toplevel objects
 	for re-use and to be able to end the process when no toplevel
 	objects are left.
@@ -598,14 +600,18 @@ class ZimApplication(object):
 
 		#######################################################################
 		# WARNING: commented out "gobject.threads_init()" because it leads to
-		# various segfaults on linux. See github issue #7
+		# various segfaults on linux.
+		#
+		# See:
+		# https://github.com/jaap-karssenberg/zim-desktop-wiki/issues/7
+		#
 		# However without this init, gobject does not properly release the
 		# python GIL during C calls, so threads may block while main loop is
 		# waiting. Thus threads become very slow and unpredictable unless we
 		# actively monitor them from the mainloop, causing python to run
 		# frequently. So be very carefull relying on threads.
 		# Re-evaluate when we are above PyGObject 3.10.2 - threading should
-		# wotk bettter there even without this statement. (But even then,
+		# work better there even without this statement. (But even then,
 		# no Gtk calls from threads, just "gobject.idle_add()". )
 		# Kept for windows, because we need thread to run ipc listener, and no
 		# crashes observed there.
