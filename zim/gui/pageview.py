@@ -4921,6 +4921,7 @@ class PageView(gtk.VBox):
 	least a method C{edit_object(buffer, iter, image_data)} and a method
 	C{do_populate_popup(menu, buffer, iter, image_data)}.
 	@ivar view: the L{TextView} child object
+	@ivar vertical: the L{VBox} that contains all objects within this panels scrollable region
 	@ivar find_bar: the L{FindBar} child widget
 	@ivar preferences: a L{ConfigDict} with preferences
 
@@ -4973,7 +4974,15 @@ class PageView(gtk.VBox):
 			self.ui.register_preferences('PageView', ui_preferences)
 
 		self.view = TextView(preferences=self.preferences)
-		self.swindow = ScrolledWindow(self.view)
+		self.vertical = gtk.VBox(False, 10)
+		#self.vertical.pack_start(self.view, True, True)
+		#self.vertical.pack_start(gtk.Label("proof of concept"), True, True)
+		self.vertical.add(self.view)
+		self.vertical.add(gtk.Label("proof of concept"))
+		self.viewport=gtk.Viewport();
+		self.viewport.add(self.vertical);
+		self.viewport.set_size_request(200, 3000);
+		self.swindow = ScrolledWindow(self.viewport)
 		self.add(self.swindow)
 
 		self.view.connect_object('link-clicked', PageView.do_link_clicked, self)
