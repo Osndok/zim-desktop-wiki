@@ -114,7 +114,9 @@ class MainWindowExtensionBase(WindowExtension):
 		pageview.unregister_image_generator_plugin(self)
 
 	def build_generator(self):
-		return self.generator_class(self.plugin)
+		generator=self.generator_class(self.plugin)
+		generator.set_page(self.window.pageview.page)
+		return generator;
 
 	def insert_object(self):
 		title = self.insert_label.replace('_', '')
@@ -155,9 +157,13 @@ class ImageGeneratorClass(object):
 	object_type = None #: generator type, e.g. "equation"
 	scriptname = None #: basename of the source files, e.g. "equation.tex"
 	imagename = None #: basename of the resulting image files, e.g. "equation.png"
+	page = None #: the wiki page that the generator is currently being applied to
 
 	def __init__(self, plugin):
 		self.plugin = plugin
+
+	def set_page(self, page):
+		self.page = page
 
 	def generate_image(self, text):
 		'''Generate an image for a user input
@@ -198,6 +204,14 @@ class ImageGeneratorClass(object):
 		It defaults to user input.
 		'''
 		return text
+
+	def get_default_text(self):
+		'''Provides a template or starting point for the user to begin editing.
+
+		@implementation: Not mandatory to be implemented by subclass.
+		It defaults to the empty string.
+		'''
+		return '';
 
 	def filter_input(self, text):
 		'''Filter contents of script file before displaying in textarea
@@ -281,13 +295,15 @@ class ImageGeneratorDialog(Dialog):
 			hbox.pack_start(self.logbutton, False)
 		# else keep hidden
 
-		self._existing_file = None
 		if image:
 			file = image['_src_file'] # FIXME ?
 			textfile = self._stitch_fileextension(file, self.generator.scriptname)
 			self._existing_file = textfile
 			self.imageview.set_file(file)
 			self.set_text(self.generator.filter_input(textfile.read()))
+		else:
+			self._existing_file = None
+			self.set_text(self.generator.filter_input(self.generator.get_default_text()))
 
 		self.textview.grab_focus()
 
