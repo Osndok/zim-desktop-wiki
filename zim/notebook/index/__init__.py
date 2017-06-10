@@ -183,12 +183,14 @@ class Index(SignalEmitter):
 		'''This methods flags all pages with content to be re-indexed.
 		Main reason to use this would be when loading a new plugin that
 		wants to index all pages.
+		Differs from L{flush()} because it does not drop all data
 		'''
-		self.flush()
-		# TODO: make this softer than "flush" and really only re-index content
-		# of known pages, no need to re-index file structure here.
-		# Set NEEDS_UPDATE for files that are actual source file only, don't
-		# check folders and other files
+		from .files import STATUS_NEED_UPDATE
+		self._db.execute(
+			'UPDATE files SET index_status = ?'
+			'WHERE id IN (SELECT source_file FROM pages)',
+			(STATUS_NEED_UPDATE,)
+		)
 
 	def start_background_check(self, notebook):
 		self.check_async(notebook, [Path(':')], recursive=True)
@@ -223,7 +225,7 @@ class Index(SignalEmitter):
 				if isinstance(file, File):
 					filesindexer.interactive_add_file(file)
 				elif isinstance(file, Folder):
-					raise ValueError
+					filesindexer.interactive_add_folder(file)
 				else:
 					raise TypeError
 
@@ -234,15 +236,8 @@ class Index(SignalEmitter):
 	def file_moved(self, oldfile, newfile):
 		# TODO: make this more efficient, specific for moved folders
 		#       by supporting moved pages in indexers
-
-		if isinstance(oldfile, File):
-			self.update_file(oldfile)
-			self.update_file(newfile)
-		elif isinstance(oldfile, Folder):
-			self.update_file(oldfile)
-			self.update_iter.check_and_update(newfile)
-		else:
-			raise TypeError
+		self.update_file(oldfile)
+		self.update_file(newfile)
 
 	def touch_current_page_placeholder(self, path):
 		'''Create a placeholder for C{path} if the page does not

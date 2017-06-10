@@ -2154,9 +2154,12 @@ def format_title(title):
 
 
 def get_window(widget):
-	window = widget.get_toplevel() if widget else None
-		# GtkInterface also implements get_toplevel
-	return window if isinstance(window, gtk.Window) else None
+	if widget and hasattr(widget, 'get_toplevel'):
+		window = widget.get_toplevel()
+			# GtkInterface also implements get_toplevel
+		return window if isinstance(window, gtk.Window) else None
+	else:
+		return None
 
 
 def register_window(window):
@@ -2728,7 +2731,9 @@ class Window(gtkwindowclass):
 	def save_uistate(self):
 		assert self.uistate
 		for key in (LEFT_PANE, RIGHT_PANE, TOP_PANE, BOTTOM_PANE):
-			self.uistate[key] = self.get_pane_state(key)
+			if key in self.uistate:
+				self.uistate[key] = self.get_pane_state(key)
+			# else pass - init_uistate() not yet called (!?)
 
 	def get_pane_state(self, pane):
 		'''Returns the state of a side pane.

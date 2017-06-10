@@ -277,7 +277,7 @@ class Notebook(ConnectorMixin, SignalEmitter):
 		self.links = LinksView.new_from_index(self.index)
 		self.tags = TagsView.new_from_index(self.index)
 
-		def on_page_row_changed(o, row):
+		def on_page_row_changed(o, row, oldrow):
 			if row['name'] in self._page_cache:
 				self._page_cache[row['name']].haschildren = row['n_children'] > 0
 				self.emit('page-info-changed', self._page_cache[row['name']])
@@ -598,6 +598,8 @@ class Notebook(ConnectorMixin, SignalEmitter):
 		# the whole move is cancelled. Chance is bigger than the other
 		# way around, e.g. attachment open in external program.
 
+		changes = []
+
 		if folder.exists():
 			if newfolder.ischild(folder):
 				# special case where we want to move a page down
@@ -609,7 +611,7 @@ class Notebook(ConnectorMixin, SignalEmitter):
 			else:
 				folder.moveto(newfolder)
 
-			self.index.file_moved(folder, newfolder)
+			changes.append((folder, newfolder))
 
 			# check if we also moved the file inadvertently
 			if file.ischild(folder):
@@ -617,14 +619,19 @@ class Notebook(ConnectorMixin, SignalEmitter):
 				movedfile = newfolder.file(rel)
 				if movedfile.exists() and movedfile.path != newfile.path:
 						movedfile.moveto(newfile)
-						self.index.file_moved(movedfile, newfile)
+						changes.append((movedfile, newfile))
 			elif file.exists():
 				file.moveto(newfile)
-				self.index.file_moved(file, newfile)
+				changes.append((file, newfile))
 
 		elif file.exists():
 			file.moveto(newfile)
-			self.index.file_moved(file, newfile)
+			changes.append((file, newfile))
+
+		# Process index changes after all fs changes
+		# more robust if anything goes wrong in index update
+		for old, new in changes:
+			self.index.file_moved(old, new)
 
 
 	def _update_links_in_moved_page(self, oldtarget, newtarget):
