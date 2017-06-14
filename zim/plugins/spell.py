@@ -97,11 +97,6 @@ class MainWindowExtension(WindowExtension):
 				</placeholder>
 			</menu>
 		</menubar>
-		<toolbar name='toolbar'>
-			<placeholder name='tools'>
-				<toolitem action='toggle_spellcheck'/>
-			</placeholder>
-		</toolbar>
 	</ui>
 	'''
 
