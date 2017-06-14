@@ -3617,6 +3617,8 @@ class FileDialog(Dialog):
 		self.filechooser.set_preview_widget(self.preview_widget)
 		self.filechooser.connect('update-preview', self.on_update_preview)
 
+		self.filechooser.set_current_folder_uri('file:///')
+
 		self._action = action
 
 	def on_update_preview(self, *a):
