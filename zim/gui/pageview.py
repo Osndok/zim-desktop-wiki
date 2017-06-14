@@ -6546,7 +6546,7 @@ class InsertImageDialog(FileDialog):
 		self.notebook = notebook
 		self.path = path
 
-		self.uistate.setdefault('attach_inserted_images', False)
+		self.uistate.setdefault('attach_inserted_images', True)
 		self.uistate.setdefault('last_image_folder', None, check=basestring)
 
 		self.add_shortcut(notebook, path)
