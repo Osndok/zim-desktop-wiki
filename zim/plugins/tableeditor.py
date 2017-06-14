@@ -215,12 +215,6 @@ class MainWindowExtension(WindowExtension):
 				</placeholder>
 			</menu>
 		</menubar>
-		<toolbar name='toolbar'>
-				<placeholder name='format'>
-					<toolitem action='insert_table'/>
-				</placeholder>
-			</toolbar>
-		</ui>
 	'''
 
 	def __init__(self, plugin, window):
