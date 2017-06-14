@@ -40,10 +40,14 @@ import logging
 
 import gtk
 
+from zim.applications import Application, ApplicationError
+
+from zim.fs import File, Dir
 
 from zim.plugins import PluginClass, WindowExtension, extends
-from zim.actions import toggle_action
+from zim.actions import action, toggle_action
 
+from zim.gui.clipboard import Clipboard
 
 from zim.gui.widgets import Button, BOTTOM_PANE, PANE_POSITIONS, \
 	IconButton, ScrolledWindow, button_set_statusbar_style, \
@@ -104,7 +108,7 @@ class AttachmentBrowserWindowExtension(WindowExtension):
 		</menubar>
 		<toolbar name='toolbar'>
 			<placeholder name='tools'>
-				<toolitem action='toggle_attachmentbrowser'/>
+				<toolitem action='copypath_attachmentbrowser'/>
 			</placeholder>
 		</toolbar>
 	</ui>
@@ -157,6 +161,18 @@ class AttachmentBrowserWindowExtension(WindowExtension):
 		self.window.add_tab(self.TAB_NAME, self.widget, preferences['pane'])
 		self.widget.show_all()
 
+	@action(
+		_('Copy Directory Path'), # T: Menu item
+		gtk.STOCK_DIRECTORY,
+		tooltip=_('Copy Directory Path') # T: Toolbar item tooltip
+	)
+	def copypath_attachmentbrowser(self):
+		dir = self.window.ui.notebook.get_attachments_dir(self.page)
+		if not dir.exists():
+			Dir(dir.path).touch()
+		#Application("bash").run(("-c", "echo '%s' | xclip -selection clipboard"))
+		Clipboard.set_text(dir.path)
+
 	@toggle_action(
 		_('Attachment Browser'), # T: Menu item
 		gtk.STOCK_DIRECTORY,
@@ -191,6 +207,7 @@ class AttachmentBrowserWindowExtension(WindowExtension):
 			self.toggle_attachmentbrowser(False)
 
 	def on_open_page(self, ui, page, path):
+		self.page=page;
 		dir = self.window.ui.notebook.get_attachments_dir(page) # XXX -> page.get_attachemnts_dir()
 		self.widget.iconview.set_folder(dir)
 		self._refresh_statusbar()
