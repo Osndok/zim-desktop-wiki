@@ -526,7 +526,6 @@ class Page(Path, SignalEmitter):
 
 		if self._ui_object:
 			self._ui_object.set_parsetree(tree)
-			self._ui_object.scroll_cursor_on_screen()
 		else:
 			self._parsetree = tree
 
