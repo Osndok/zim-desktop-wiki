@@ -460,7 +460,7 @@ class PagesViewInternal(object):
 			'SELECT * FROM pages WHERE parent=? '
 			'ORDER BY sortkey, name',
 			(parent_id,)
-		):
+		).fetchall():
 			yield PageIndexRecord(row)
 			if row['n_children'] > 0:
 				for child in self.walk(row['id']): # recurs
@@ -471,7 +471,7 @@ class PagesViewInternal(object):
 			'SELECT * FROM pages WHERE parent=? '
 			'ORDER BY sortkey, name',
 			(parent_id,)
-		):
+		).fetchall():
 			if row['n_children'] > 0:
 				for child in self.walk_bottomup(row['id']): # recurs
 					yield child
@@ -538,6 +538,17 @@ class PagesView(IndexView):
 	def walk_bottomup(self, path=None):
 		page_id = self._pages.get_page_id(path) if path else ROOT_ID # can raise
 		return self._pages.walk_bottomup(page_id)
+
+	def search_pagename_substring(self, nameFragment):
+		candidates = self.db.execute(
+			'SELECT * FROM pages WHERE LOWER(name) LIKE ? ORDER BY parent,sortkey',
+			('%'+nameFragment.lower()+'%',)
+		).fetchall();
+
+		logger.debug("%d page-names contain '%s'", len(candidates), nameFragment);
+
+		for c in candidates:
+			yield PageIndexRecord(c);
 
 	def n_all_pages(self):
 		'''Returns to total number of pages in the index'''

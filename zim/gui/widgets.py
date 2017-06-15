@@ -1998,7 +1998,7 @@ class PageEntry(InputEntry):
 
 		text = self.get_text()
 		if self._current_completion:
-			if text.startswith(self._current_completion) \
+			if self._current_completion.startswith(text) \
 			and not ':' in text[len(self._current_completion):]:
 				return # nothing to update
 			else: # Clear out-of-date completions
@@ -2060,6 +2060,11 @@ class PageEntry(InputEntry):
 			pass
 
 	def _fill_completion_any(self, path, text):
+
+		# Don't match single-character completions
+		if len(text) < 2:
+			return;
+
 		#print "COMPLETE ANY", path, text
 		# Complete all matches of "text"
 		# start with children, than peers, than rest of tree
@@ -2075,20 +2080,25 @@ class PageEntry(InputEntry):
 			return href.to_wiki_link()
 
 		model = completion.get_model()
-		lowertext = text.lower()
-		childpos, peerpos = 0, 0
-		for p in self.notebook.pages.walk():
-			if lowertext in p.basename.lower():
-				link = relative_link(p)
-				if link.startswith('+'):
-					model.insert(childpos, (link, p.basename))
-					childpos += 1
-					peerpos += 1
-				elif not ':' in link:
-					model.insert(peerpos, (link, p.basename))
-					peerpos += 1
-				else:
-					model.append((link, p.basename))
+		count, childpos, peerpos = 0, 0, 0
+		for p in self.notebook.pages.search_pagename_substring(text):
+
+			count=count+1;
+			# BENCHMARK: 1 second of UI hang for every 100 entries.
+			if count > 300:
+				logger.debug("truncating long results list to prevent GTK hang")
+				break
+			
+			link = relative_link(p)
+			if link.startswith('+'):
+				model.insert(childpos, (link, p.basename))
+				childpos += 1
+				peerpos += 1
+			elif not ':' in link:
+				model.insert(peerpos, (link, p.basename))
+				peerpos += 1
+			else:
+				model.append((link, p.basename))
 
 
 class NamespaceEntry(PageEntry):
