@@ -55,7 +55,21 @@ class DiagramGenerator(ImageGeneratorClass):
 		self.svgfile = File(self.dotfile.path[:-4] + '.svg') # len('.dot') == 4
 
 	def get_default_text(self):
-		return 'digraph '+self.page.basename+'\n{\n\trankdir=LR;\n}\n';
+		return (
+				"digraph %s\n"
+				"{\n"
+				"\t#rankdir=LR;\n"
+				'\tnode[shape=rect, style="rounded,filled", fillcolor=white];\n'
+				'\n'
+				'\tsubgraph Green\n'
+				'\t{\n'
+				'\t\tnode[fillcolor=green];\n'
+				'\t\tGreenNode\n'
+				'\t}\n'
+				'\n'
+				'\t\n'
+				"}\n"
+				) % (self.page.name.replace(":",""));
 
 	def generate_image(self, text):
 		# Write to tmp file
