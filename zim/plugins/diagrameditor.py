@@ -12,7 +12,7 @@ from zim.applications import Application, ApplicationError
 
 
 # TODO put these commands in preferences
-dotcmd = ('dot', '-Tsvg', '-Nfontname=DejaVuSansMono', '-Efontname=DejaVuSansMono', '-Gfontname=DejaVuSansMono', '-o')
+dotargs = ['-Tsvg', '-Nfontname=DejaVuSansMono', '-Efontname=DejaVuSansMono', '-Gfontname=DejaVuSansMono', '-o']
 
 class InsertDiagramPlugin(ImageGeneratorPlugin):
 
@@ -35,7 +35,7 @@ This is a core plugin shipping with zim.
 
 	@classmethod
 	def check_dependencies(klass):
-		has_dotcmd = Application(dotcmd).tryexec()
+		has_dotcmd = Application(("dot")).tryexec()
 		return has_dotcmd, [("GraphViz", has_dotcmd, True)]
 
 
@@ -75,17 +75,35 @@ class DiagramGenerator(ImageGeneratorClass):
 		# Write to tmp file
 		self.dotfile.write(text)
 
-		# Call GraphViz
+		firstLine=text.split('\n', 1)[0];
 
-		argv = dotcmd + tuple(map(unicode, (self.svgfile.path, self.dotfile.path)));
+		if (firstLine == "#circular") or (firstLine == "#circo"):
+			exe = ["circo"]
+		elif (firstLine == "#cluster" ) or (firstLine == "#osage"):
+			exe = ["osage"]
+		elif (firstLine == "#radial") or (firstLine == "#twopi"):
+			exe = ["twopi"]
+		elif (firstLine == "#spring") or (firstLine == "#neato"):
+			exe = ["neato"]
+		elif (firstLine == "#spring2") or (firstLine == "#fdp"):
+			exe = ["fdp"]
+		elif (firstLine == "#large") or (firstLine == "#sfdp"):
+			exe = ["sfdp"]
+		elif (firstLine == "#squaretree") or (firstLine == "#patchwork"):
+			exe = ["patchwork"]
+		else:
+			exe = ["dot"]
+
+		# Call GraphViz
+		argv = exe + dotargs + list(map(unicode, (self.svgfile.path, self.dotfile.path)));
 		p = subprocess.Popen(argv, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = p.communicate(text)
-		
+
 		output = self._read_all(stdout)
 		diagnostics = self._read_all(stderr)
-		
+
 		#self.logfile.write(stderr)
-		
+
 		if p.returncode == 0:
 			if self.svgfile.exists():
 				return self.svgfile, None
