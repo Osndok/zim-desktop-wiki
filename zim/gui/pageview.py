@@ -5676,6 +5676,10 @@ class PageView(gtk.VBox):
 				file = link['href']
 			else:
 				file = None
+
+			#print "link type: %s" % (type)
+			image = None
+			plugin = None
 		else:
 			image = buffer.get_image_data(iter)
 			if image is None:
@@ -5686,18 +5690,18 @@ class PageView(gtk.VBox):
 			if image:
 				type = 'image'
 				file = image['src']
-				if 'type' in image \
-				and image['type'] in self.image_generator_plugins:
-					plugin = self.image_generator_plugins[image['type']]
-					plugin.do_populate_popup(menu, buffer, iter, image)
-					menu.show_all()
-					return # plugin should decide about populating
+				# ???: maybe split off query string?
 			else:
 				return # No link or image
+			
+			if 'type' in image \
+			and image['type'] in self.image_generator_plugins:
+				plugin = self.image_generator_plugins[image['type']]
+			else:
+				plugin = None
 
 		if file:
 			file = self.ui.notebook.resolve_file(file, self.page)
-
 
 		menu.prepend(gtk.SeparatorMenuItem())
 
@@ -5709,13 +5713,14 @@ class PageView(gtk.VBox):
 			menu.prepend(item)
 
 		# edit
-		if type == 'image':
-			item = gtk.MenuItem(_('_Edit Properties')) # T: menu item in context menu for image
-		else:
-			item = gtk.MenuItem(_('_Edit Link')) # T: menu item in context menu
-		item.connect('activate', lambda o: self.edit_object(iter=iter))
-		item.set_sensitive(not self.readonly)
-		menu.prepend(item)
+		if not plugin:
+			if type == 'image':
+				item = gtk.MenuItem(_('_Edit Properties')) # T: menu item in context menu for image
+			else:
+				item = gtk.MenuItem(_('_Edit Link')) # T: menu item in context menu
+			item.connect('activate', lambda o: self.edit_object(iter=iter))
+			item.set_sensitive(not self.readonly)
+			menu.prepend(item)
 
 		# copy
 		def set_pagelink(o, path):
@@ -5753,7 +5758,7 @@ class PageView(gtk.VBox):
 
 		# open with & open folder
 		if type in ('file', 'image') and file:
-			item = gtk.MenuItem(_('Open Folder'))
+			item = gtk.MenuItem(_('Open Containing Folder'))
 				# T: menu item to open containing folder of files
 			menu.prepend(item)
 			dir = file.dir
@@ -5801,6 +5806,10 @@ class PageView(gtk.VBox):
 			item.connect_object(
 				'activate', PageView.do_link_clicked, self, link)
 		menu.prepend(item)
+
+		# Plugin options go *on-the-top*
+		if plugin:
+			plugin.do_populate_popup(menu, buffer, iter, image)
 
 		menu.show_all()
 
