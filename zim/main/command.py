@@ -127,13 +127,15 @@ class Command(object):
 
 class GtkCommand(Command):
 	'''Base class for commandline commands that result in a Gtk
-	user interface being presented to the user.
-
-	These commands are candidates for being run in another process
-	and also will be wrapped with a C{gtk.main} loop.
+	user interface being presented to the user or want to interact with the
+	Gtk user interface.
 
 	If the C{run()} method returns a window, it will be added to the
-	application top level windows.
+	application top level windows. And a C{gtk.main} loop will run untill
+	all windows are destroyed.
+
+	Commands derived from this class can be dispatched to the main application
+	process. This is controlled by the C{standalone_process} property.
 
 	NOTE: Do _not_ call C{gtk.main} from the command, this will be
 	done by the application object.
@@ -142,3 +144,16 @@ class GtkCommand(Command):
 	default_options	 = Command.default_options + (
 		('standalone', '', 'start a single instance, no background process'),
 	)
+
+	@property
+	def standalone_process(self):
+		return self.opts.get('standalone')
+
+	def run_local(self):
+		'''Method called in local process before we (try to) dispatch the
+		command to the primary process. If it returns C{True} we assume the
+		command is done and C{run()} is not called.
+		If the command is called from the primary process directly, this method
+		gets never called.
+		'''
+		return False

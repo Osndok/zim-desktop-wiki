@@ -2,6 +2,8 @@
 
 # Copyright 2011-2017 Jaap Karssenberg <jaap.karssenberg@gmail.com>
 
+from __future__ import with_statement
+
 import tests
 
 
@@ -20,6 +22,10 @@ from zim.formats.wiki import Parser as WikiParser
 
 WIKI_TEXT = '''\
 Try all kind of combos - see if the parser trips
+
+=== TODO: test heading with label ===
+
+=== Not a task ===
 
 TODO:
 [ ] A
@@ -50,6 +56,9 @@ FIXME: dus
 	[ ] TODO: BAR !!!
 [ ] Date <2012-03-27 >2012-03-01
 [ ] Date < wk1213.3
+[ ] Date < wk1213.3! with punctuation
+[ ] Not a date < wk1213.8
+[ ] Not a date < wk1213foooooo
 
 TODO @home:
 [ ] Some more tasks !!!
@@ -136,6 +145,7 @@ class TestTaskParser(tests.TestCase):
 		mydate = '%04i-%02i-%02i' % parse_date('11/12')
 
 		wanted = [
+			(t('TODO: test heading with label'), []),
 			(t('A'), []),
 			(t('B'), []),
 			(t('C'), []),
@@ -162,6 +172,9 @@ class TestTaskParser(tests.TestCase):
 			]),
 			(t('Date <2012-03-27 >2012-03-01', due='2012-03-27', start='2012-03-01'), []),
 			(t('Date < wk1213.3', due='2012-03-28'), []),
+			(t('Date < wk1213.3! with punctuation', due='2012-03-28', prio=1), []),
+			(t('Not a date < wk1213.8'), []),
+			(t('Not a date < wk1213foooooo'), []),
 
 			# this list inherits the @home tag - and inherits prio
 			(t('Some more tasks !!!', prio=3, tags='home'), [
@@ -211,7 +224,8 @@ class TestTaskParser(tests.TestCase):
 		testTokenStream(tokens)
 
 		parser = TaskParser()
-		tasks = parser.parse(tokens)
+		with tests.LoggingFilter('zim.plugins.tasklist', 'Invalid date format'):
+			tasks = parser.parse(tokens)
 
 		#~ import pprint; pprint.pprint(tasks)
 		self.assertEqual(tasks, wanted)

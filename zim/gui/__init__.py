@@ -1620,6 +1620,8 @@ class GtkInterface(gobject.GObject):
 		self._custom_tool_ui_id = self._mainwindow.uimanager.add_ui_from_string(ui)
 
 	def _exec_custom_tool(self, action):
+		self._mainwindow.pageview.save_changes()
+
 		manager = CustomToolManager()
 		tool = manager.get_tool(action.get_name())
 		logger.info('Execute custom tool %s', tool.name)
@@ -1892,6 +1894,10 @@ class MainWindow(Window):
 
 		fname = 'menubar.xml'
 		self.uimanager.add_ui_from_string(data_file(fname).read())
+
+	@property
+	def notebook(self):
+		return self.ui.notebook
 
 	def destroy(self):
 		self.ui.close_page(self.ui.page) # XXX
@@ -2883,15 +2889,15 @@ class AttachFileDialog(FileDialog):
 			pageview = self.app_window.pageview
 			buffer = pageview.view.get_buffer()
 			if self.uistate['insert_attached_images'] and file.isimage():
-				ok = pageview.insert_image(file, interactive=False)
-				if not ok: # image type not supported?
+				try:
+					pageview.insert_image(file, interactive=False)
+				except ValueError: # image type not supported?
 					logger.info('Could not insert image: %s', file)
 					pageview.insert_links([file])
-				if i != last:
-					buffer.insert_at_cursor('\n')
 			else:
 				pageview.insert_links([file])
-				if i != last:
-					buffer.insert_at_cursor('\n')
+
+			if i != last:
+				buffer.insert_at_cursor('\n')
 
 		return True

@@ -27,7 +27,7 @@ import zim.datetimetz as datetime
 
 import zim.formats
 
-from zim.fs import File, Dir, normalize_file_uris, FilePath
+from zim.fs import File, Dir, normalize_file_uris, FilePath, adapt_from_newfs
 from zim.errors import Error
 from zim.config import String, Float, Integer, Boolean
 from zim.notebook import Path, interwiki_link, HRef, PageNotFoundError
@@ -4715,6 +4715,10 @@ class SavePageHandler(object):
 		self._autosave_timer = None
 		self._error_event = None
 
+	def wait_for_store_page_async(self):
+		# FIXME: duplicate of notebook method
+		self.notebook.wait_for_store_page_async()
+
 	def queue_autosave(self, timeout=15):
 		'''Queue a single autosave action after a given timeout.
 		Will not do anything once an autosave is already queued.
@@ -5290,6 +5294,7 @@ class PageView(gtk.VBox):
 		buffer = self.view.get_buffer()
 		if write_if_not_modified or buffer.get_modified():
 			self._save_page_handler.save_page_now()
+		self._save_page_handler.wait_for_store_page_async()
 
 	def clear(self):
 		'''Clear the buffer'''
@@ -5985,21 +5990,22 @@ class PageView(gtk.VBox):
 		@param force: when C{True} the image will be inserted
 		even if it doesn't exist (or it isn't an image)
 
-		@returns: C{True} if succesfull
+		@raises ValueError: if file does not exist or is not a supported image
+		type
 		'''
 		if interactive:
 			InsertImageDialog(self.ui, self.view.get_buffer(), self.ui.notebook, self.page, file).run()
 		else:
 			# Check if file is supported, otherwise unsupported file
 			# results in broken image icon
+			file = adapt_from_newfs(file)
 			assert isinstance(file, File)
 			if not force \
 			and not (file.exists() and gtk.gdk.pixbuf_get_file_info(file.path)):
-				return False
+				raise ValueError, 'Not an image %s' % file
 
 			src = self.ui.notebook.relative_filepath(file, self.page) or file.uri
 			self.view.get_buffer().insert_image_at_cursor(file, src, type=type)
-			return True
 
 	@action(_('Bulle_t List'), readonly=False) # T: Menu item
 	def insert_bullet_list(self):
