@@ -815,7 +815,8 @@ class PagesTreeModelMixin(TreeModelMixinBase):
 		)):
 			mytreepath = parentpath + (offset + i,)
 			if mytreepath not in self.cache:
-				self.cache[mytreepath] = MyTreeIter(mytreepath, row, row['n_children'], IS_PAGE)
+				n_backlinks = self.db.execute("SELECT COUNT(*) FROM links WHERE target=?",(row['id'],)).fetchone()[0];
+				self.cache[mytreepath] = MyTreeIter(mytreepath, row, row['n_children'], IS_PAGE, n_backlinks)
 			else:
 				break # avoid overwriting cache because of ref count
 

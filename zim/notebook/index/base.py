@@ -45,13 +45,14 @@ class IndexerBase(SignalEmitter, ConnectorMixin):
 
 
 class MyTreeIter(object):
-	__slots__ = ('treepath', 'row', 'n_children', 'hint')
+	__slots__ = ('treepath', 'row', 'n_children', 'hint', 'n_backlinks')
 
-	def __init__(self, treepath, row, n_children, hint=None):
+	def __init__(self, treepath, row, n_children, hint=None, n_backlinks=0):
 		self.treepath = treepath
 		self.row = row
 		self.n_children = n_children
 		self.hint = hint
+		self.n_backlinks = n_backlinks
 
 
 class TreeModelMixinBase(ConnectorMixin):

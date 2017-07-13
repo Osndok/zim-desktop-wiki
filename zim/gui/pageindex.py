@@ -203,7 +203,8 @@ class PageTreeStoreBase(gtk.GenericTreeModel, gtk.TreeDragSource, gtk.TreeDragDe
 			else:
 				return pango.WEIGHT_NORMAL
 		elif column == N_CHILD_COL:
-			return iter.n_children or ''
+			return iter.n_backlinks or ''
+			#return iter.n_children or ''
 				# don't display "0" to keep look bit clean
 
 	def on_get_iter(self, treepath):
