@@ -73,10 +73,11 @@ TEXT_TARGETS = tuple(gtk.target_list_add_text_targets(info=TEXT_TARGET_ID))
 TEXT_TARGET_NAMES = tuple([target[0] for target in TEXT_TARGETS])
 
 # All targets that we can convert to a parsetree, in order of choice
+# 'Text' is preferred over 'image' b/c #214
 PARSETREE_ACCEPT_TARGETS = (
         PARSETREE_TARGET,
         INTERNAL_PAGELIST_TARGET, PAGELIST_TARGET,
-) + IMAGE_TARGETS + URI_TARGETS + TEXT_TARGETS
+) + TEXT_TARGETS + IMAGE_TARGETS + URI_TARGETS
 PARSETREE_ACCEPT_TARGET_NAMES = tuple([target[0] for target in PARSETREE_ACCEPT_TARGETS])
 #~ print 'ACCEPT', PARSETREE_ACCEPT_TARGET_NAMES
 
