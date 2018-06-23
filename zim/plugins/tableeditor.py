@@ -215,6 +215,7 @@ class MainWindowExtension(WindowExtension):
 				</placeholder>
 			</menu>
 		</menubar>
+		</ui>
 	'''
 
 	def __init__(self, plugin, window):
