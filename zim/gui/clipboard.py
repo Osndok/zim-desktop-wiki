@@ -462,7 +462,7 @@ class PageLinkItem(ClipboardItem):
 			text = pack_urilist((link,))
 			selectiondata.set(PAGELIST_TARGET_NAME, 8, text)
 		elif id == TEXT_TARGET_ID:
-			selectiondata.set_text(self.path.name)
+			selectiondata.set_text(':'+self.path.name)
 		else:
 			assert False, 'Unknown target id %i' % id
 
