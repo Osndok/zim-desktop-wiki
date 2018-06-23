@@ -689,6 +689,9 @@ class PagesView(IndexView):
 		@param target: a L{Path} object
 		@returns: a L{HRef} object
 		'''
+		# REH: let's try always using absolute links.
+		return HRef(HREF_REL_ABSOLUTE, target.name)
+
 		if target == source: # weird edge case ..
 			return HRef(HREF_REL_FLOATING, target.basename)
 		elif target.ischild(source):
