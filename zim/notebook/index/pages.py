@@ -689,16 +689,17 @@ class PagesView(IndexView):
 		@param target: a L{Path} object
 		@returns: a L{HRef} object
 		'''
-		# REH: let's try always using absolute links.
-		return HRef(HREF_REL_ABSOLUTE, target.name)
 
 		if target == source: # weird edge case ..
 			return HRef(HREF_REL_FLOATING, target.basename)
 		elif target.ischild(source):
 			return HRef(HREF_REL_RELATIVE, target.relname(source))
 		else:
-			href = self._find_floating_link(source, target)
-			return href or HRef(HREF_REL_ABSOLUTE, target.name)
+			# NOTICE: This function is called very frequently, including for every entry in the "suggestions"
+			#         popup menu. Therefore, hunting through so many pages can be quite slow.
+			#href = self._find_floating_link(source, target)
+			#return href or HRef(HREF_REL_ABSOLUTE, target.name)
+			return HRef(HREF_REL_ABSOLUTE, target.name)
 
 	def _find_floating_link(self, source, target):
 		# Relative links only resolve for pages that have a common parent
