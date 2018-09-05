@@ -288,20 +288,26 @@ class GtkInterface(gobject.GObject):
 		if not self.preferences['GtkInterface']['gtk_bell']:
 			gtk.rc_parse_string('gtk-error-bell = 0')
 
-		# Init UI
+		logger.debug('basic prefs ready')
+
+		# Init UI - this takes a long time
 		self._mainwindow = MainWindow(self, self.preferences, fullscreen, geometry)
+		logger.debug('main window ready')
 
 		self._custom_tool_ui_id = None
 		self._custom_tool_actiongroup = None
 		self._custom_tool_iconfactory = None
 		self.load_custom_tools()
+		logger.debug('custom tools loaded')
 
 		self.preferences.connect('changed', self.do_preferences_changed)
 		self.do_preferences_changed()
+		logger.debug('preferences loaded')
 
 		self._init_notebook(self.notebook)
 		if page and isinstance(page, basestring): # IPC call
 			page = self.notebook.pages.lookup_from_user_input(page)
+		logger.debug('notebook initialized')
 
 		self._first_page = page # XXX HACK - if we call open_page here, plugins are not yet initialized
 
@@ -1762,11 +1768,13 @@ class MainWindow(Window):
 		"C{WxH+X+Y}", if C{None} the previous state is restored
 		'''
 		Window.__init__(self)
+		logger.debug('window superclass initialized')
 		self.isfullscreen = False
 		self.ui = ui
 
 		self.preferences = preferences # XXX should be just prefernces dict - use "config" otherwise
 		self.preferences.connect('changed', self.do_preferences_changed)
+		logger.debug('main-window prefs activated')
 
 		ui.connect('open-page', self.on_open_page)
 		ui.connect('close-page', self.on_close_page)
@@ -1786,9 +1794,11 @@ class MainWindow(Window):
 			ui.close()
 			return True # Do not destroy - let close() handle it
 		self.connect('delete-event', do_delete_event)
+		logger.debug('main-window: events connected')
 
 		# init uimanager
 		self.uimanager = gtk.UIManager()
+		logger.debug('main-window: ui-manager created')
 		self.uimanager.add_ui_from_string('''
 		<ui>
 			<menubar name="menubar">
@@ -1808,8 +1818,10 @@ class MainWindow(Window):
 		self.toolbar.connect('popup-context-menu', self.do_toolbar_popup)
 		self.add_bar(self.menubar, TOP)
 		self.add_bar(self.toolbar, TOP)
+		logger.debug('main-window: building 1');
 
 		self.pageindex = PageIndex(ui)
+		logger.debug('main-window: page-index created');
 		self.add_tab(_('Index'), self.pageindex, LEFT_PANE) # T: Label for pageindex tab
 
 		self.pageindex.treeview.connect('insert-link',
@@ -1820,14 +1832,18 @@ class MainWindow(Window):
 		self.add_widget(self.pathbar_box, (TOP_PANE, TOP))
 
 		self.pageview = PageView(ui, ui.notebook) # XXX
+		logger.debug('main-window: pageview created');
+
 		self.pageview.connect_after(
 			'textstyle-changed', self.on_textview_textstyle_changed)
 		self.pageview.view.connect_after(
 			'toggle-overwrite', self.on_textview_toggle_overwrite)
 		self.pageview.view.connect('link-enter', self.on_link_enter)
 		self.pageview.view.connect('link-leave', self.on_link_leave)
+		logger.debug('main-window: building 2')
 
 		self.add(self.pageview)
+		logger.debug('main-window: building 3')
 
 		# create statusbar
 		hbox = gtk.HBox(spacing=0)
@@ -1836,6 +1852,7 @@ class MainWindow(Window):
 		self.statusbar = gtk.Statusbar()
 		self.statusbar.push(0, '<page>')
 		hbox.add(self.statusbar)
+		logger.debug('main-window: building 4')
 
 		def statusbar_element(string, size):
 			frame = gtk.Frame()
@@ -1858,6 +1875,7 @@ class MainWindow(Window):
 		frame.set_shadow_type(gtk.SHADOW_IN)
 		self.statusbar.pack_end(frame, False)
 		frame.add(self.statusbar_backlinks_button)
+		logger.debug('main-window: building 5')
 
 		# add a second statusbar widget - somehow the corner grip
 		# does not render properly after the pack_end for the first one
@@ -1866,6 +1884,7 @@ class MainWindow(Window):
 		#~ hbox.pack_end(statusbar2, False)
 
 		self.do_preferences_changed()
+		logger.debug('main-window: prefs re-activated')
 
 		self._geometry_set = False
 		self._set_fullscreen = False
@@ -1895,6 +1914,7 @@ class MainWindow(Window):
 
 		fname = 'menubar.xml'
 		self.uimanager.add_ui_from_string(data_file(fname).read())
+		logger.debug('main-window: uimanager ready')
 
 	@property
 	def notebook(self):

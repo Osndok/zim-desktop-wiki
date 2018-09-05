@@ -243,6 +243,8 @@ def parsetree_from_selectiondata(selectiondata, notebook=None, path=None):
 
 		file = dir.new_file(nameAndTime+'.'+extension)
 		logger.debug("Saving image from clipboard to %s", file)
+		# TODO: pngquant
+		# TODO: tesseract
 		pixbuf.save(file.path, format)
 		FS.emit('path-created', file) # notify version control
 

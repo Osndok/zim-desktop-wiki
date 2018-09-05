@@ -559,12 +559,15 @@ class PageIndex(gtk.ScrolledWindow):
 		@param ui: the main L{GtkInterface} object
 		'''
 		gtk.ScrolledWindow.__init__(self)
+		logger.debug('PageIndex: super')
 		self.ui = ui
 
 		self.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 		self.set_shadow_type(gtk.SHADOW_IN)
+		logger.debug('PageIndex: tweaked')
 
 		self.treeview = PageTreeView(ui)
+		logger.debug('PageIndex: PageTreeView created')
 		self.add(self.treeview)
 
 		# Set model and connect to index
@@ -572,16 +575,23 @@ class PageIndex(gtk.ScrolledWindow):
 		index = self.ui.notebook.index
 
 		model = PageTreeStore(index)
+		logger.debug('PageIndex: PageTreeStore created')
+		# REH: this function call greatly slows down the application startup.
+		logger.debug('PageIndex: starting the long treeview.set_model command...')
+		logger.debug('--> https://github.com/jaap-karssenberg/zim-desktop-wiki/issues/519')
 		self.treeview.set_model(model)
+		logger.debug('PageIndex: model set')
 
 		# Connect to ui signals
 		ui.connect('open-page', self.on_open_page)
 		ui.connect('start-index-update', lambda o: self.disconnect_model())
 		ui.connect('end-index-update', lambda o: self.reload_model())
+		logger.debug('PageIndex: wired up')
 
 		# Select current page, if any
 		if self.ui.page:
 			self.on_open_page(self.ui, self.ui, page, self.ui, page)
+			logger.debug('PageIndex: page opened')
 
 	def on_open_page(self, ui, page, path):
 		treepath = self.treeview.set_current_page(Path(path.name), vivificate=True)
