@@ -34,6 +34,7 @@ import re
 import weakref
 import unicodedata
 import locale
+import subprocess
 
 try:
 	import gtksourceview2
@@ -53,6 +54,7 @@ from zim.parsing import link_type
 from zim.signals import ConnectorMixin
 from zim.notebook.index import IndexNotFoundError
 from zim.actions import action
+from zim.applications import Application
 
 logger = logging.getLogger('zim.gui')
 
@@ -75,6 +77,7 @@ KEYVALS_SLASH = (
 	gtk.gdk.unicode_to_keyval(ord('/')), gtk.gdk.keyval_from_name('KP_Divide'))
 KEYVAL_ESC = gtk.gdk.keyval_from_name('Escape')
 
+AUTOCOMPLETE_HELPER=Application('zim-autocomplete-helper')
 
 # UI Environment config. Would properly belong in zim.gui.__init__
 # but defined here to avoid unnecessary dependencies on zim.gui
@@ -2027,6 +2030,7 @@ class PageEntry(InputEntry):
 				try:
 					path = self.notebook.pages.lookup_from_user_input(link, reference)
 				except ValueError:
+					logger.debug('autocomplete value error')
 					return
 
 			self._fill_completion_for_anchor(path, prefix, text)
@@ -2042,6 +2046,7 @@ class PageEntry(InputEntry):
 
 			self._fill_completion_any(path, text)
 
+		self._fill_from_helper(text);
 		self._current_completion = text
 		self.get_completion().complete()
 
@@ -2104,6 +2109,24 @@ class PageEntry(InputEntry):
 			else:
 				model.append((link, p.basename))
 
+	def _fill_from_helper(self, text):
+		# External hook to allow user-derived auto-completions for non-existant pages
+		model = self.get_completion().get_model()
+		# TODO: factor out tryexec for faster menu building
+		if AUTOCOMPLETE_HELPER.tryexec():
+			logger.debug("calling helper...")
+			proc = subprocess.Popen(['zim-autocomplete-helper', text],stdout=subprocess.PIPE)
+			while True:
+				line = proc.stdout.readline()
+				if not line:
+					break
+				name=line.rstrip();
+				if not name:
+					break;
+				if name[0]!=':':
+					name=':%s'%name;
+				logger.debug("autocomplete-helper got: %s"%name)
+				model.append((name, name))
 
 class NamespaceEntry(PageEntry):
 	'''Widget to select a zim page path as a namespace
