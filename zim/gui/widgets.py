@@ -2034,19 +2034,19 @@ class PageEntry(InputEntry):
 					return
 
 			self._fill_completion_for_anchor(path, prefix, text)
-
+			self._fill_from_helper(text, prefix);
 		elif text.startswith('+'):
 			prefix = '+'
 			path = self.notebookpath
 
 			self._fill_completion_for_anchor(path, prefix, text)
-
+			self._fill_from_helper(text, '+');
 		else:
 			path = self.notebookpath or Path(':')
 
 			self._fill_completion_any(path, text)
+			self._fill_from_helper(text, ':');
 
-		self._fill_from_helper(text);
 		self._current_completion = text
 		self.get_completion().complete()
 
@@ -2109,7 +2109,7 @@ class PageEntry(InputEntry):
 			else:
 				model.append((link, p.basename))
 
-	def _fill_from_helper(self, text):
+	def _fill_from_helper(self, text, prefix):
 		# External hook to allow user-derived auto-completions for non-existant pages
 		model = self.get_completion().get_model()
 		# TODO: factor out tryexec for faster menu building
@@ -2123,8 +2123,8 @@ class PageEntry(InputEntry):
 				name=line.rstrip();
 				if not name:
 					break;
-				if name[0]!=':':
-					name=':%s'%name;
+				if prefix in ['+',':'] and name[0]!=prefix:
+					name='%s%s'%(prefix,name);
 				logger.debug("autocomplete-helper got: %s"%name)
 				model.append((name, name))
 
