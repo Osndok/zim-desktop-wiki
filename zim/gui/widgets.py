@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2008-2015 Jaap Karssenberg <jaap.karssenberg@gmail.com>
+# Copyright 2008-2018 Jaap Karssenberg <jaap.karssenberg@gmail.com>
 
 '''This module contains a number of custom gtk widgets
 that are used in the zim gui modules.
@@ -1893,7 +1893,6 @@ class PageEntry(InputEntry):
 		self.notebookpath = path
 		self.subpaths_only = subpaths_only
 		self.existing_only = existing_only
-		self._current_completion = None
 
 		if self._allow_select_root:
 			placeholder_text = _('<Top>')
@@ -2004,17 +2003,12 @@ class PageEntry(InputEntry):
 		if not self.notebook:
 			return # no completion without a notebook
 
-		if self._current_completion and self.get_completion():
-			# Clear out-of-date completions
-			model = self.get_completion().get_model()
-			if model:
-				model.clear()
-			self._current_completion = None
-
 		text = self.get_text()
+		model = self.get_completion().get_model()
+		model.clear()
 
 		if not text or not self.get_input_valid():
-			return # can't complete invalid input
+			return
 
 		accum=[]
 
@@ -2050,7 +2044,6 @@ class PageEntry(InputEntry):
 			# NB: for those wanting floating links, the ':' here is probably wrong.
 			self._fill_from_helper(text, ':', accum);
 
-		self._current_completion = text
 		self.get_completion().complete()
 
 	def _fill_completion_for_anchor(self, path, prefix, text, accum):
@@ -2080,8 +2073,7 @@ class PageEntry(InputEntry):
 
 		#print "COMPLETE ANY", path, text
 		# Complete all matches of "text"
-		# start with children, than peers, than rest of tree
-		# if path == ":" don't use child notation
+		# start with children and peers, than peers of parents, than rest of tree
 		completion = self.get_completion()
 		completion.set_match_func(gtk_entry_completion_match_func, 1)
 
@@ -2093,28 +2085,22 @@ class PageEntry(InputEntry):
 			return href.to_wiki_link()
 
 		model = completion.get_model()
-		count, childpos, peerpos = 0, 0, 0
-		for p in self.notebook.pages.search_pagename_substring(text):
-
-			count=count+1;
-			# BENCHMARK: 1 second of UI hang for every 100 entries.
-			if count > 300:
-				logger.debug("truncating long results list to prevent GTK hang")
-				break
-			
-			link = relative_link(p)
-			if link.startswith('+'):
-				model.insert(childpos, (link, p.basename))
-				accum.append(link)
-				childpos += 1
-				peerpos += 1
-			elif not ':' in link:
-				model.insert(peerpos, (link, p.basename))
-				accum.append(link)
-				peerpos += 1
-			else:
+		searchpath = list(path.parents())
+		searchpath.insert(1, path) # children after peers but before parents
+		for namespace in searchpath:
+			for p in self.notebook.pages.match_pages(namespace, text):
+				link = relative_link(p)
 				model.append((link, p.basename))
-				accum.append(link)
+				accum.append(p.basename)
+
+			if len(model) > 10:
+				break
+		else:
+			for p in self.notebook.pages.match_all_pages(text, limit=20):
+				if p.parent not in searchpath:
+					link = relative_link(p)
+					model.append((link, p.basename))
+					accum.append(p.basename)
 
 	def _fill_from_helper(self, text, prefix, accum):
 		# External hook to allow user-derived auto-completions for non-existant pages
@@ -3415,7 +3401,7 @@ class ErrorDialog(gtk.MessageDialog):
 			window.set_size_request(350, 200)
 			self.set_resizable(True)
 			self.vbox.add(window)
-			self.vbox.show_all()			
+			self.vbox.show_all()
 		else:
 			self.showing_trace = False # used in test
 			pass
