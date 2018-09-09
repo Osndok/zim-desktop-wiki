@@ -21,6 +21,7 @@ from zim.formats import get_format, ParseTree, ParseTreeBuilder, \
 	FORMATTEDTEXT, IMAGE, LINK
 from zim.export.linker import StaticExportLinker
 
+from zim.applications import Application
 
 logger = logging.getLogger('zim.gui.clipboard')
 
@@ -82,7 +83,7 @@ PARSETREE_ACCEPT_TARGETS = (
 PARSETREE_ACCEPT_TARGET_NAMES = tuple([target[0] for target in PARSETREE_ACCEPT_TARGETS])
 #~ print 'ACCEPT', PARSETREE_ACCEPT_TARGET_NAMES
 
-
+onImageInserted = Application('zim-on-image-inserted')
 
 # Mimetype text/uri-list is used for drag n drop of URLs
 # it is plain text encoded list of urls, separated by \r\n
@@ -247,6 +248,8 @@ def parsetree_from_selectiondata(selectiondata, notebook=None, path=None):
 		# TODO: tesseract
 		pixbuf.save(file.path, format)
 		FS.emit('path-created', file) # notify version control
+		if onImageInserted.tryexec():
+			onImageInserted.run((file.path, notebook.dir, path));
 
 		links = [file.uri]
 		return _link_tree(links, notebook, path)
