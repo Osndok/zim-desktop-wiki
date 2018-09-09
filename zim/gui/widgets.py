@@ -1905,7 +1905,7 @@ class PageEntry(InputEntry):
 		completion = gtk.EntryCompletion()
 		completion.set_model(gtk.ListStore(str, str)) # visible name, match name
 		completion.set_text_column(0)
-		completion.set_inline_completion(True)
+		completion.set_inline_completion(False)
 		self.set_completion(completion)
 
 		self.connect_after('changed', DelayedCallback(200, self.__class__.update_completion))
