@@ -107,7 +107,7 @@ def dispatch(*args):
 		logger.debug('Connecting to %s', SERVER_ADDRESS)
 		conn = Client(SERVER_ADDRESS, SERVER_ADDRESS_FAMILY)
 		conn.send(args)
-		if conn.poll(5):
+		if conn.poll(20):
 			re = conn.recv()
 		else:
 			re = 'No response'
