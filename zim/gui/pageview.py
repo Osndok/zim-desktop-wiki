@@ -7240,7 +7240,10 @@ class MoveTextDialog(Dialog):
 		assert self.text # just to be sure
 		start, end = buffer.get_selection_bounds()
 		self.bounds = (start.get_offset(), end.get_offset())
-			# Save selection bounds - can get lost later :S
+		# Save selection bounds - can get lost later :S
+
+		# REH: somehow, this 'self.text' data can get *LOST*... so print it to the log, just in case!
+		print "MoveTextDialog: %s,%s\n\n%s"%(start,end,self.text)
 
 		self.uistate.setdefault('link', True)
 		self.uistate.setdefault('open_page', False)
@@ -7263,8 +7266,10 @@ class MoveTextDialog(Dialog):
 
 		# Copy text
 		if newpage.exists():
+			print "page exists"
 			self.ui.append_text_to_page(newpage.name, self.text)
 		else:
+			print "new page, dne"
 			newpage = self.ui.new_page_from_text(self.text, name=newpage.name, use_template=True)
 
 		# Delete text (after copy was succesfull..)
