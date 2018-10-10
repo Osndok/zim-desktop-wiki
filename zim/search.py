@@ -43,7 +43,7 @@ For content '*' can occur on both sides, but does not match whitespace
 # of a toplevel AND group possibly with nested OR groups one level
 # below it.
 
-
+import os
 import re
 import logging
 
@@ -253,12 +253,49 @@ class SearchSelection(PageSelection):
 		self.scores = {}
 
 		# Actual search
-		self.update(self._process_group(query.root, selection, callback))
+		if os.name == 'posix':
+			self.update(self._paths_from_grep_search(query.string))
+		else:
+			self.update(self._process_group(query.root, selection, callback))
 
 		# Clean up results
 		scored = set(self.scores.keys())
 		for path in scored - self:
 			self.scores.pop(path)
+
+	def _grep_line_to_pagename(self, s):
+		s=s.rstrip();
+
+		# BUG: use the notebook's page suffix/constant
+		if s.endswith('.txt'):
+			return s[:-4].replace('/', ':')
+
+		# TODO: dupe-suppress results that include both the page and an image caption
+		if s.endswith('.caption'):
+			return s[:s.rindex('/')].replace('/', ':')
+
+		print("unknown grep return line: %s"%s);
+		return None;
+
+	def _paths_from_grep_search(self, s):
+		import subprocess
+
+		myresults = SearchSelection(None)
+		myresults.scores = self.scores # HACK for callback function
+
+		command=['grep', '-ri', '--files-with-match', '--include=*.txt', '--include=*.caption', '--', s]
+		notebook_dir=self.notebook.dir.path
+
+		print("search notebook_dir: %s"%(notebook_dir))
+
+		# TODO: support the 'limit search to current page and subpages' by adding a second/third parameter (relative page path & attachment directory)
+		for line in subprocess.Popen(command, stdout=subprocess.PIPE, cwd=notebook_dir).stdout:
+			pagename=self._grep_line_to_pagename(line)
+			if pagename:
+				#print("result: %s"%(pagename))
+				myresults.add(Path(pagename))
+
+		return myresults
 
 	def _process_group(self, group, scope=None, callback=None):
 		# This method processes all search terms in a QueryGroup
