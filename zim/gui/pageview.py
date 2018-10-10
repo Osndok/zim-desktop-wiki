@@ -7060,7 +7060,10 @@ class FindBar(FindWidget, gtk.HBox):
 
 	def on_find_entry_activate(self):
 		self.on_find_entry_changed()
-		self.textview.grab_focus()
+		#https://bugs.launchpad.net/zim/+bug/1685371
+		#self.textview.grab_focus()
+		self.find_next()
+		self.grab_focus()
 
 	def do_key_press_event(self, event):
 		if event.keyval == KEYVAL_ESC:
