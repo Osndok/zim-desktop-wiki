@@ -367,7 +367,13 @@ class GtkInterface(gobject.GObject):
 		assert self.notebook is not None
 
 		if self._first_page is None:
-			self._first_page = self.history.get_current()
+			from datetime import datetime
+			#self._first_page = self.history.get_current()
+			#logger.debug('no self._first_page during gtk.run(), history: %s'%(self._first_page))
+			#name='Journal';
+			name=datetime.today().strftime('Journal:%Y:%m:%d')
+			self._first_page=self.notebook.get_page(Path(name))
+			logger.debug('no self._first_page during gtk.run(), using: %s'%(self._first_page))
 
 		# And here we go!
 		self._mainwindow.show_all()
