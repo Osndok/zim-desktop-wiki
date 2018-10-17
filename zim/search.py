@@ -254,7 +254,7 @@ class SearchSelection(PageSelection):
 
 		# Actual search
 		if os.name == 'posix':
-			self.update(self._paths_from_grep_search(query.string))
+			self.update(self._paths_from_grep_search(query.string, callback))
 		else:
 			self.update(self._process_group(query.root, selection, callback))
 
@@ -270,30 +270,39 @@ class SearchSelection(PageSelection):
 		if s.endswith('.txt'):
 			return s[:-4].replace('/', ':')
 
-		# TODO: dupe-suppress results that include both the page and an image caption
-		if s.endswith('.caption'):
-			return s[:s.rindex('/')].replace('/', ':')
+		# TODO: dupe-suppress results that include both the page and other files
+		return s[:s.rindex('/')].replace('/', ':')
 
-		print("unknown grep return line: %s"%s);
-		return None;
-
-	def _paths_from_grep_search(self, s):
+	def _paths_from_grep_search(self, s, callback=None):
 		import subprocess
 
 		myresults = SearchSelection(None)
 		myresults.scores = self.scores # HACK for callback function
 
-		command=['grep', '-ri', '--files-with-match', '--include=*.txt', '--include=*.caption', '--', s]
+		# Use 'ripgrep' (if installed) for an additional 17x speedup.
+		if os.path.isfile('/usr/bin/rg') or os.path.isfile('/usr/local/bin/rg'):
+			command=['rg', '-i', '--files-with-matches', '--', s]
+		else:
+			command=['grep', '-ri', '--files-with-match', '--include=*.txt', '--include=*.caption', '--', s]
 		notebook_dir=self.notebook.dir.path
 
 		print("search notebook_dir: %s"%(notebook_dir))
+
+		#if callback and not callback(myresults, None):
+		#	self.cancelled = True
+		#	return myresults
 
 		# TODO: support the 'limit search to current page and subpages' by adding a second/third parameter (relative page path & attachment directory)
 		for line in subprocess.Popen(command, stdout=subprocess.PIPE, cwd=notebook_dir).stdout:
 			pagename=self._grep_line_to_pagename(line)
 			if pagename:
+				path=Path(pagename)
 				#print("result: %s"%(pagename))
-				myresults.add(Path(pagename))
+				myresults.add(path)
+				# Why does calling the callback make the process never finish?
+				#if callback and not callback(None, path):
+				#	self.cancelled = True
+				#	return myresults
 
 		return myresults
 
