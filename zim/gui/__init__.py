@@ -368,12 +368,12 @@ class GtkInterface(gobject.GObject):
 
 		if self._first_page is None:
 			from datetime import datetime
-			#self._first_page = self.history.get_current()
-			#logger.debug('no self._first_page during gtk.run(), history: %s'%(self._first_page))
-			#name='Journal';
-			name=datetime.today().strftime('Journal:%Y:%m:%d')
-			self._first_page=self.notebook.get_page(Path(name))
-			logger.debug('no self._first_page during gtk.run(), using: %s'%(self._first_page))
+			self._first_page = self.history.get_current()
+
+			# If the last page open was a journal page, advance it to today's journal.
+			if self._first_page.name.startswith('Journal'):
+				name=datetime.today().strftime('Journal:%Y:%m:%d')
+				self._first_page=self.notebook.get_page(Path(name))
 
 		# And here we go!
 		self._mainwindow.show_all()
