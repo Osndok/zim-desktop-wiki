@@ -6564,7 +6564,7 @@ class InsertDateDialog(Dialog):
 
 		text = model[iter][self.DATE_COL]
 		if self.link and self.linkbutton.get_active():
-			self.buffer.insert_link_at_cursor(text, self.link.name)
+			self.buffer.insert_link_at_cursor(text, ':'+self.link.name)
 		else:
 			self.buffer.insert_at_cursor(text)
 
