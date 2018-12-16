@@ -1958,8 +1958,12 @@ class TextBuffer(gtk.TextBuffer):
 			for line in range(start.get_line(), end.get_line() + 1):
 				func(line, *args, **kwarg)
 			return True
-		else:
-			return False
+
+		# If they have nothing selected, then use the whole line that the insertion point is on.
+		line=self.get_insert_iter().get_line()
+		func(line, *args, **kwarg)
+		#? return False
+		return True
 
 	def do_mark_set(self, iter, mark):
 		gtk.TextBuffer.do_mark_set(self, iter, mark)
