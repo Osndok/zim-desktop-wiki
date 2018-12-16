@@ -6058,17 +6058,17 @@ class PageView(gtk.VBox):
 			iter.forward_to_line_end()
 			buffer.place_cursor(iter)
 
-	@action(_('Bulle_t List'), readonly=False) # T: Menu item,
+	@action(_('Bulle_t List'), accelerator='<Control><Shift>asterisk', readonly=False) # T: Menu item,
 	def apply_format_bullet_list(self):
 		'''Menu action to format selection as bullet list'''
 		self._apply_bullet(BULLET)
 
-	@action(_('_Numbered List'), readonly=False) # T: Menu item,
+	@action(_('_Numbered List'), accelerator='<Control><Shift>exclam', readonly=False) # T: Menu item,
 	def apply_format_numbered_list(self):
 		'''Menu action to format selection as numbered list'''
 		self._apply_bullet(NUMBER_BULLET)
 
-	@action(_('Checkbo_x List'), readonly=False) # T: Menu item,
+	@action(_('Checkbo_x List'), STOCK_UNCHECKED_BOX, '<Primary>bracketleft', readonly=False) # T: Menu item,
 	def apply_format_checkbox_list(self):
 		'''Menu action to format selection as checkbox list'''
 		self._apply_bullet(UNCHECKED_BOX)
