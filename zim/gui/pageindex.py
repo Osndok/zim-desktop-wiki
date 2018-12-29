@@ -14,6 +14,8 @@ import gtk
 import pango
 import logging
 
+from datetime import datetime
+
 from functools import partial
 
 from zim.notebook import Path
@@ -577,9 +579,11 @@ class PageIndex(gtk.ScrolledWindow):
 		model = PageTreeStore(index)
 		logger.debug('PageIndex: PageTreeStore created')
 		# REH: this function call greatly slows down the application startup.
+		logger.debug(datetime.now());
 		logger.debug('PageIndex: starting the long treeview.set_model command...')
 		logger.debug('--> https://github.com/jaap-karssenberg/zim-desktop-wiki/issues/519')
 		self.treeview.set_model(model)
+		logger.debug(datetime.now())
 		logger.debug('PageIndex: model set')
 
 		# Connect to ui signals
