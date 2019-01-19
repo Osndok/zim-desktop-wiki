@@ -3893,8 +3893,6 @@ class TextView(gtk.TextView):
 		# Key bindings when there is an active selections:
 		#   Tab indents whole selection
 		#   Shift-Tab and optionally Backspace unindent whole selection
-		#   * Turns whole selection in bullet list, or toggle back
-		#   > Quotes whole selection with '>'
 		handled = True
 		buffer = self.get_buffer()
 
@@ -3966,28 +3964,6 @@ class TextView(gtk.TextView):
 			elif event.keyval in KEYVALS_BACKSPACE \
 			and self.preferences['unindent_on_backspace']:
 				handled = decrement_indent(start, end)
-			elif event.keyval in KEYVALS_ASTERISK + (KEYVAL_POUND,):
-				def toggle_bullet(line, newbullet):
-					bullet = buffer.get_bullet(line)
-					if not bullet and not buffer.get_line_is_empty(line):
-						buffer.set_bullet(line, newbullet)
-					elif bullet == newbullet: # FIXME broken for numbered list
-						buffer.set_bullet(line, None)
-				if event.keyval == KEYVAL_POUND:
-					buffer.foreach_line_in_selection(toggle_bullet, NUMBER_BULLET)
-				else:
-					buffer.foreach_line_in_selection(toggle_bullet, BULLET)
-			elif event.keyval in KEYVALS_GT \
-			and multi_line_indent(start, end):
-				def email_quote(line):
-					iter = buffer.get_iter_at_line(line)
-					bound = iter.copy()
-					bound.forward_char()
-					if iter.get_text(bound) == '>':
-						buffer.insert(iter, '>')
-					else:
-						buffer.insert(iter, '> ')
-				buffer.foreach_line_in_selection(email_quote)
 			else:
 				handled = False
 
