@@ -59,7 +59,7 @@ class DiagramGenerator(ImageGeneratorClass):
 				"digraph %s\n"
 				"{\n"
 				"\t#rankdir=LR;\n"
-				'\tnode[shape=rect, style="rounded,filled", fillcolor=white];\n'
+				'\tnode[shape=rect, style="rounded,filled", fillcolor=white, margin="0.2,0.055"];\n'
 				'\n'
 				'\tsubgraph Green\n'
 				'\t{\n'
