@@ -371,7 +371,7 @@ class GtkInterface(gobject.GObject):
 			self._first_page = self.history.get_current()
 
 			# If the last page open was a journal page, advance it to today's journal.
-			if self._first_page.name.startswith('Journal'):
+			if self._first_page and self._first_page.name.startswith('Journal'):
 				name=datetime.today().strftime('Journal:%Y:%m:%d')
 				self._first_page=self.notebook.get_page(Path(name))
 
