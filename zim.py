@@ -51,8 +51,9 @@ except ImportError:
 
 # Run the application and handle some exceptions
 try:
-	encoding = sys.getfilesystemencoding() # not 100% sure this is correct
-	argv = [arg.decode(encoding) for arg in sys.argv]
+	#encoding = sys.getfilesystemencoding() # not 100% sure this is correct
+	#argv = [arg.decode(encoding) for arg in sys.argv]
+	argv = [arg.decode('utf-8') for arg in sys.argv]
 	exitcode = zim.main.main(*argv)
 	sys.exit(exitcode)
 except zim.main.GetoptError as err:
