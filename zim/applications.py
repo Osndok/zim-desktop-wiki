@@ -269,10 +269,13 @@ class Application(object):
 			flags |= gobject.SPAWN_DO_NOT_REAP_CHILD
 			# without this flag child is reaped automatically -> no zombies
 
+		if not cwd:
+			cwd = os.getcwd()
+
 		logger.info('Spawning: %s (cwd: %s)', argv, cwd)
 		try:
 			pid, stdin, stdout, stderr = \
-				gobject.spawn_async(argv, flags=flags, **opts)
+				gobject.spawn_async(argv, flags=flags, working_directory=cwd, **opts)
 		except gobject.GError:
 			from zim.gui.widgets import ErrorDialog
 			ErrorDialog(None, _('Failed running: %s') % argv[0]).run()
