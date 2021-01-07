@@ -523,10 +523,7 @@ def build_command(args, pwd=None):
 			mod = get_module('zim.plugins.' + cmd)
 			klass = lookup_subclass(mod, Command)
 		except:
-			if '-D' in args or '--debug' in args:
-				logger.exception('Error while loading: zim.plugins.%s.Command', cmd)
-				# Can't use following because log level not yet set:
-				# logger.debug('Error while loading: zim.plugins.%s.Command', cmd, exc_info=sys.exc_info())
+			logger.exception('Error while loading: zim.plugins.%s.Command', cmd)
 			raise UsageError('Could not load commandline command for plugin "%s"' % cmd)
 	else:
 		if args and args[0].startswith('--') and args[0][2:] in commands:
