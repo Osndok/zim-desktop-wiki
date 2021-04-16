@@ -428,8 +428,9 @@ class CalendarWidget(gtk.VBox, WindowSidePaneWidget):
 		self.calendar = Calendar()
 		self.calendar.display_options(
 			gtk.CALENDAR_SHOW_HEADING |
-			gtk.CALENDAR_SHOW_DAY_NAMES |
-			gtk.CALENDAR_SHOW_WEEK_NUMBERS)
+			gtk.CALENDAR_SHOW_DAY_NAMES
+			# | gtk.CALENDAR_SHOW_WEEK_NUMBERS
+			)
 		self.calendar.connect('activate', self.on_calendar_activate)
 		self.calendar.connect('month-changed', self.on_month_changed)
 		self.on_month_changed(self.calendar)
