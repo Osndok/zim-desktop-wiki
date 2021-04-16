@@ -2031,6 +2031,8 @@ class PageEntry(InputEntry):
 
 			self._fill_completion_for_anchor(path, prefix, text, accum)
 			self._fill_from_helper(text, prefix, accum);
+		elif text.startswith('./'):
+			self._fill_from_directory(text, accum)
 		elif text.startswith('+'):
 			prefix = '+'
 			path = self.notebookpath
@@ -2101,6 +2103,26 @@ class PageEntry(InputEntry):
 					link = relative_link(p)
 					model.append((link, p.basename))
 					accum.append(p.basename)
+
+	def _fill_from_directory(self, text, accum):
+		# use self.notebookpath to locate the page directory
+		dir = self.notebook.get_attachments_dir(self.notebookpath)
+
+		if not dir.exists():
+			return
+
+		logger.debug("autocomplete-from-directory: %s"%dir)
+		logger.debug("autocomplete-from-directory: folder: %s"%(dir._folder))
+		model = self.get_completion().get_model()
+
+		for f in dir.list_files():
+			name = f.basename
+			withDotSlash = "./%s" % (name)
+			logger.debug("autocomplete-from-directory: name %s"%(name))
+
+			if text in withDotSlash:
+				model.append((withDotSlash, name))
+				accum.append(name)
 
 	def _fill_from_helper(self, text, prefix, accum):
 		# External hook to allow user-derived auto-completions for non-existant pages
