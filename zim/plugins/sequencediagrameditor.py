@@ -37,7 +37,7 @@ obscures the default sequencediagrameditor that would ordinarily be used.
 	@classmethod
 	def check_dependencies(klass):
 		has_dotcmd = Application(dotcmd).tryexec()
-		return has_dotcmd, [("GraphViz", has_dotcmd, True)]
+		return has_dotcmd, [("mscgen", has_dotcmd, True)]
 
 
 class SequenceDiagramGenerator(ImageGeneratorClass):
