@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 # This script is a wrapper around zim.main.main() for running zim as
 # an application.
