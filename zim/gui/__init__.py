@@ -480,7 +480,7 @@ class GtkInterface(gobject.GObject):
 		else:
 			self._mainwindow.destroy()
 
-	@action(_('_Quit'), 'gtk-quit', '<Primary>Q') # T: Menu item
+	@action(_('_Quit'), 'gtk-quit') # T: Menu item
 	def quit(self):
 		'''Menu action for quit.
 		@emits: quit
