@@ -214,7 +214,7 @@ if ENCODING.upper() in (
 	'ASCII', 'US-ASCII', 'ANSI_X3.4-1968', 'ISO646-US', # some aliases for ascii
 	'LATIN1', 'ISO-8859-1', 'ISO_8859-1', 'ISO_8859-1:1987', # aliases for latin1
 ):
-	logger.warn('Filesystem encoding is set to ASCII or Latin1, using UTF-8 instead')
+	# REH: logger.warn('Filesystem encoding is set to ASCII or Latin1, using UTF-8 instead')
 	ENCODING = 'utf-8'
 
 
