@@ -522,10 +522,12 @@ def build_command(args, pwd=None):
 		try:
 			mod = get_module('zim.plugins.' + cmd)
 			klass = lookup_subclass(mod, Command)
+			logger.debug('got plugin class')
 		except:
 			logger.exception('Error while loading: zim.plugins.%s.Command', cmd)
 			raise UsageError('Could not load commandline command for plugin "%s"' % cmd)
 	else:
+		logger.debug('build_command non-plugin')
 		if args and args[0].startswith('--') and args[0][2:] in commands:
 			cmd = args.pop(0)[2:]
 			if cmd == 'server' and '--gui' in args:
@@ -782,10 +784,10 @@ class ZimApplication(object):
 		try:
 			_ipc_dispatch(pwd, *args)
 		except AssertionError as err:
-			logger.debug('Got error in dispatch: %s', str(err))
+			logger.debug('Got assertion error in dispatch: %s', str(err), exc_info=True)
 			return False
-		except Exception:
-			logger.exception('Got error in dispatch')
+		except Exception as e:
+			logger.exception('Got error in dispatch: %s', str(e))
 			return False
 		else:
 			logger.debug('Dispatched command %r', args)
