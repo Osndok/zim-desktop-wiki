@@ -103,7 +103,8 @@ def dispatch(*args):
 	@raises AssertionError: when no existing zim process or connection failed
 	'''
 	assert not get_in_main_process()
-	try:
+	#try:
+	if True:
 		logger.debug('Connecting to %s', SERVER_ADDRESS)
 		conn = Client(SERVER_ADDRESS, SERVER_ADDRESS_FAMILY)
 		conn.send(args)
@@ -111,14 +112,14 @@ def dispatch(*args):
 			re = conn.recv()
 		else:
 			re = 'No response'
-	except Exception as e:
-		if hasattr(e, 'errno') and e.errno == 2:
-			raise AssertionError('No such file or directory')
-		else:
-			raise AssertionError('Connection failed')
-	else:
-		if re != 'OK':
-			raise AssertionError('Error in response: %s' % re)
+	#except Exception as e:
+	#	if hasattr(e, 'errno') and e.errno == 2:
+	#		raise AssertionError('No such file or directory')
+	#	else:
+	#		raise AssertionError('Connection failed')
+	#else:
+	#	if re != 'OK':
+	#		raise AssertionError('Error in response: %s' % re)
 
 
 def start_listening(handler):
