@@ -476,21 +476,27 @@ class Page(Path, SignalEmitter):
 		self._store_tree(tree)
 
 	def _store_tree(self, tree):
+		print 'page._store_tree'
 		if tree and tree.hascontent:
 			if self._meta is not None:
+				print 'tree.meta.update: preserve headers'
 				tree.meta.update(self._meta) # Preserver headers
 			elif self.source_file.exists():
+				print 'file exists?'
 				# Try getting headers from file
 				try:
 					text = self.source_file.read()
 				except zim.newfs.FileNotFoundError:
+					print '...but it does not exist?!'
 					return None
 				else:
+					print 'fallback'
 					parser = self.format.Parser()
 					tree = parser.parse(text)
 					self._meta = tree.meta
 					tree.meta.update(self._meta) # Preserver headers
 			else: # not self.source_file.exists()
+				print 'new page/file'
 				now = datetime.now()
 				tree.meta['Creation-Date'] = now.isoformat()
 
@@ -498,6 +504,7 @@ class Page(Path, SignalEmitter):
 			self._last_etag = self.source_file.writelines_with_etag(lines, self._last_etag)
 			self._meta = tree.meta
 		else:
+			print 'tree has no content'
 			self.source_file.remove()
 			self._last_etag = None
 			self._meta = None
@@ -580,8 +587,10 @@ class Page(Path, SignalEmitter):
 			raise PageReadOnlyError(self)
 
 		if self._ui_object:
+			print 'page.set_parsetree WITH ui object: ', tree
 			self._ui_object.set_parsetree(tree)
 		else:
+			print 'page.set_parsetree w/o ui object: ', tree
 			self._parsetree = tree
 
 		self.modified = True
@@ -593,8 +602,10 @@ class Page(Path, SignalEmitter):
 		'''
 		ourtree = self.get_parsetree()
 		if ourtree:
+			print 'page.append_parsetree WITH ourtree: ', ourtree
 			self.set_parsetree(ourtree + tree)
 		else:
+			print 'page.append_parsetree WITHOUT ourtree (empty?)'
 			self.set_parsetree(tree)
 
 	def set_ui_object(self, object):

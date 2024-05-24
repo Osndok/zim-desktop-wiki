@@ -292,12 +292,15 @@ class ParseTree(object):
 		if otherroot.text:
 			children = myroot.getchildren()
 			if children:
+				print 'ParseTree.extend WITH otherroot.text AND children'
 				last = children[-1]
 				last.tail = (last.tail or '') + otherroot.text
 			else:
+				print 'ParseTree.extend WITH otherroot.text BUT NO children'
 				myroot.text = (myroot.text or '') + otherroot.text
 
 		for element in otherroot.getchildren():
+			print 'ParseTree.extend; element: ', element
 			myroot.append(element)
 
 		return self
