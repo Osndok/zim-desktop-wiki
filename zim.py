@@ -18,6 +18,27 @@ except:
 	sys.exit(1)
 
 
+# python 3.3 way to enable faulthandler to dump the tracebacks on a specific signal (e.g., SIGUSR1)
+#import faulthandler
+#import signal
+#faulthandler.register(signal.SIGUSR1)
+
+# python 2.7 way
+import sys
+import threading
+import traceback
+import signal
+
+def dump_threads(signum, frame):
+    print("\n\nSignal received, dumping all threads:")
+    for thread_id, frame in sys._current_frames().items():
+        print("\n\nThread ID: %s" % thread_id)
+        traceback.print_stack(frame)
+
+# Register the signal handler
+signal.signal(signal.SIGUSR1, dump_threads)
+
+
 # Win32: must setup log file or it tries to write to $PROGRAMFILES
 # See http://www.py2exe.org/index.cgi/StderrLog
 # If startup is OK, this will be overruled in zim/main with per user log file
