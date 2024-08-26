@@ -988,7 +988,11 @@ class GtkInterface(gobject.GObject):
 			name = name.name
 
 		path = self.notebook.pages.lookup_from_user_input(name)
-		print 'append_text_to_page: path=', path, ', text=', text
+
+		try:
+			print 'append_text_to_page: path=', path, ', text=', text.encode('utf-8', 'replace')
+		except Exception as e:
+			print("Error:", e)
 
 		# If the page is currently open, then we have to use insert_parsetree to be sure the UI reflects the data change
 		if path.name == self._mainwindow.pageview.page.name:
