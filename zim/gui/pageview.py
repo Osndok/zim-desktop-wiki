@@ -250,6 +250,15 @@ page_re = Re(r'''(
 	  [\w\.\-\(\)]*(?: :[\w\.\-\(\)]{2,} )+:?
 	| \+\w[\w\.\-\(\)]+(?: :[\w\.\-\(\)]{2,} )*:?
 )$''', re.X | re.U) # e.g. namespace:page or +subpage, but not word without ':' or '+'
+
+# REH changes
+# 1. Do not match parenthesis
+# 2. Match single-digit page names (e.g. ":Test:1")
+page_re = Re(r'''(
+	  [\w\.\-]*(?: :[\w\.\-]+ )+:?
+	| \+\w[\w\.\-]+(?: :[\w\.\-]+ )*:?
+)$''', re.X | re.U)
+
 interwiki_re = Re(r'\w[\w\+\-\.]+\?\w\S+$', re.U) # name?page, where page can be any url style
 file_re = Re(r'''(
 	  ~/[^/\s]
@@ -266,6 +275,7 @@ markup_re = {'style-strong': Re(r'(\*{2})(.*)\1'),
 
 tag_re = Re(r'^(@\w+)$', re.U)
 
+# match exactly two consecutive alphabetic (Unicode) characters, excluding digits and special characters
 twoletter_re = re.compile(r'[^\W\d]{2}', re.U) # match letters but not numbers - not non-alphanumeric and not number
 
 
