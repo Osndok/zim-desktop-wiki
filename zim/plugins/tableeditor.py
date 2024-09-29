@@ -170,6 +170,9 @@ class CellFormatReplacer:
 	'''
 	@staticmethod
 	def cell_to_input(text, with_pango=False):
+		if text is None:
+			return ''
+
 		''' Displayed table-cell will converted to gtk-entry input text '''
 		if with_pango:
 			for pattern, replace in zip(SYNTAX_WIKI_PANGO, SYNTAX_WIKI_PANGO2):
