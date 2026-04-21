@@ -672,7 +672,14 @@ class Notebook(ConnectorMixin, SignalEmitter):
 			if link_type(text) != 'page':
 				raise zim.formats.VisitorSkip
 
-			href = HRef.new_from_wiki_link(text)
+			try:
+				href = HRef.new_from_wiki_link(text)
+			except ValueError:
+				# Malformed link text (e.g. ":(" typed as a link) cannot be
+				# resolved; leave it alone rather than aborting the move.
+				logger.warning('Skipping invalid link %r on page %s', text, path)
+				raise zim.formats.VisitorSkip
+
 			if href.rel == HREF_REL_FLOATING:
 				newtarget = self.pages.resolve_link(page, href)
 				oldtarget = self.pages.resolve_link(oldpath, href)
@@ -734,7 +741,14 @@ class Notebook(ConnectorMixin, SignalEmitter):
 			if link_type(text) != 'page':
 				raise zim.formats.VisitorSkip
 
-			href = HRef.new_from_wiki_link(text)
+			try:
+				href = HRef.new_from_wiki_link(text)
+			except ValueError:
+				# Malformed link text (e.g. ":(" typed as a link) cannot be
+				# resolved and therefore cannot point at the moved page.
+				logger.warning('Skipping invalid link %r on page %s', text, path)
+				raise zim.formats.VisitorSkip
+
 			target = self.pages.resolve_link(page, href)
 
 			if target == newtarget or target.ischild(newtarget):
